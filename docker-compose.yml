@@ -1,0 +1,36 @@
+version: "3.9"
+services:
+  bot_ui:
+    build: ./bot_ui
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./bot_ui:/usr/src/app
+    command: npm start
+
+  price_prediction:
+    build: ./price_prediction
+    volumes:
+      - ./price_prediction:/usr/src/app
+    command: bash -c "source ./venv/bin/activate && python3.8 main.py"
+    
+  rasa_bot:
+    build: ./rasa_bot
+    volumes:
+      - ./rasa_bot:/usr/src/app
+    ports:
+      - "5005:5005"
+    command: bash -c "source ./venv/bin/activate && rasa run actions && rasa run -m models --enable-api --cors '*' --debug"
+    depends_on:
+      - rasa_duckling
+
+  rasa_duckling:
+    image: rasa/duckling
+    ports:
+      - "8000:8000"
+
+  recommendations:
+    build: ./recommendations
+    volumes:
+      - ./recommendations:/usr/src/app
+    command: bash -c "source ./venv/bin/activate && python3.8 main.py"
