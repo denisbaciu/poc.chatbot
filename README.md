@@ -110,8 +110,9 @@ We encourage contributions and suggestions. Please feel free to open issues or s
 Resources used
 -------------------------------------
 
-https://rasa.com/docs/rasa/
-https://extendsclass.com/csv-generator.html
-https://github.com/cedextech/Rasa-Chatbot-Templates/tree/master/02_lead_bot
-https://github.com/facebook/duckling
-https://github.com/JiteshGaikwad/Chatbot-Widget
+* https://rasa.com/docs/rasa/
+* https://extendsclass.com/csv-generator.html
+* https://github.com/cedextech/Rasa-Chatbot-Templates/tree/master/02_lead_bot
+* https://github.com/facebook/duckling
+* https://github.com/JiteshGaikwad/Chatbot-Widget
+* https://github.com/dotnet/machinelearning-samples
