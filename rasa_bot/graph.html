@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Rasa Core Visualisation</title>
+    <script src="https://dagrejs.github.io/project/dagre-d3/latest/dagre-d3.min.js"></script>
+    <script src="https://dagrejs.github.io/project/dagre/latest/dagre.min.js"></script>
+    <script src="https://d3js.org/d3.v4.js"></script>
+    <script src="https://dagrejs.github.io/project/graphlib-dot/v0.6.3/graphlib-dot.js"></script>
+</head>
+<body>
+<div id="errormsg" style="color: #b00"></div>
+<svg>
+    <style id="graph-style">
+        .node.invisible > rect {
+            display: none;
+        }
+
+        .node.start > rect {
+            fill: #7f7;
+            rx: 30;
+            ry: 18;
+        }
+
+        .node.end > rect {
+            fill: #f77;
+            rx: 30;
+            ry: 18;
+        }
+
+        .node:not(.active) > rect, .node:not(.active) > .label {
+            opacity: 0.4;
+        }
+
+        .edgePath:not(.active) path {
+            opacity: 0.4;
+        }
+
+        .node.ellipsis > rect {
+            fill: #CCC;
+        }
+
+        .node.intent > rect {
+            fill: #7ff;
+        }
+
+        .node.dashed > rect {
+            stroke-dasharray: 5;
+        }
+
+        text {
+            font-weight: 300;
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serf, serif;
+            font-size: 14px;
+            color: #1f1d1d;
+        }
+
+        .node rect {
+            stroke: #444;
+            fill: #fff;
+            stroke-width: 1.5px;
+        }
+
+        .edgePath path {
+            stroke: #333;
+            stroke-width: 1.5px;
+        }
+
+        svg {
+            position: fixed;
+            top: 10px;
+            left: 0;
+            height: 100%;
+            width: 100%
+        }
+    </style>
+    <g></g>
+</svg>
+<script>
+
+  function serveGraph() {
+    let oldInputGraphValue;
+
+    const url = 'visualization.dot';
+    const refreshInterval = 500;
+
+    // trigger a refresh by fetching an updated graph
+    setInterval(function () {
+      fetch(url).then(r => r.text()).then(dot => {
+        document.getElementById('errormsg').innerHTML = '';
+        if (oldInputGraphValue === dot) return;
+
+        oldInputGraphValue = dot;
+        drawGraph(dot);
+      }).catch(err => {
+        document.getElementById('errormsg').innerHTML =
+          'Failed to update plot. (' + err.message + ')';
+      });
+    }, refreshInterval);
+  }
+
+  function drawGraph(graph) {
+    let g = graphlibDot.read(graph);
+    // Set margins, if not present
+    if (!g.graph().hasOwnProperty("marginx") &&
+      !g.graph().hasOwnProperty("marginy")) {
+      g.graph().marginx = 20;
+      g.graph().marginy = 20;
+    }
+    g.graph().transition = function (selection) {
+      return selection.transition().duration(300);
+    };
+    // Render the graph into svg g
+    d3.select("svg g").call(render, g);
+  }
+  // Set up zoom support
+  const svg = d3.select("svg"),
+    inner = d3.select("svg g"),
+    zoom = d3.zoom().on("zoom", function () {
+      inner.attr("transform", d3.event.transform);
+    });
+  svg.call(zoom);
+
+  // Create and configure the renderer
+  const render = dagreD3.render();
+
+  let isClient = false;
+  isClient = true;
+
+  if (isClient) {
+    // Mark all nodes and their edges as active
+    cssRules = document.getElementById('graph-style').sheet.cssRules;
+    cssRules[3].style.opacity = 1;
+    cssRules[4].style.opacity = 1;
+
+    let graph;
+    graph = `digraph  {
+0 [class="start active", fillcolor=green, fontsize=12, label=START, style=filled];
+"-1" [class=end, fillcolor=red, fontsize=12, label=END, style=filled];
+1 [class="", fontsize=12, label=utter_smalltalk_agent_be_clever];
+2 [class="", fontsize=12, label=utter_smalltalk_agent_beautiful];
+3 [class="", fontsize=12, label=utter_smalltalk_agent_birth_date];
+4 [class="", fontsize=12, label=utter_smalltalk_agent_boring];
+5 [class="", fontsize=12, label=utter_smalltalk_agent_boss];
+6 [class="", fontsize=12, label=utter_smalltalk_agent_busy];
+7 [class="", fontsize=12, label=utter_smalltalk_agent_chatbot];
+8 [class="", fontsize=12, label=utter_smalltalk_agent_clever];
+9 [class="", fontsize=12, label=utter_smalltalk_agent_crazy];
+10 [class="", fontsize=12, label=utter_smalltalk_agent_fired];
+11 [class="", fontsize=12, label=utter_smalltalk_agent_funny];
+12 [class="", fontsize=12, label=utter_smalltalk_agent_good];
+13 [class="", fontsize=12, label=utter_smalltalk_agent_happy];
+14 [class="", fontsize=12, label=utter_smalltalk_agent_hungry];
+15 [class="", fontsize=12, label=utter_smalltalk_agent_marry_user];
+16 [class="", fontsize=12, label=utter_smalltalk_agent_my_friend];
+17 [class="", fontsize=12, label=utter_smalltalk_agent_occupation];
+18 [class="", fontsize=12, label=utter_smalltalk_agent_origin];
+19 [class="", fontsize=12, label=utter_smalltalk_agent_ready];
+20 [class="", fontsize=12, label=utter_smalltalk_agent_real];
+21 [class="", fontsize=12, label=utter_smalltalk_agent_residence];
+22 [class="", fontsize=12, label=utter_smalltalk_agent_right];
+23 [class="", fontsize=12, label=utter_smalltalk_confirmation_yes];
+24 [class="", fontsize=12, label=utter_smalltalk_agent_sure];
+25 [class="", fontsize=12, label=utter_smalltalk_agent_talk_to_me];
+26 [class="", fontsize=12, label=utter_smalltalk_agent_there];
+27 [class="", fontsize=12, label=utter_smalltalk_appraisal_bad];
+28 [class="", fontsize=12, label=utter_smalltalk_appraisal_good];
+29 [class="", fontsize=12, label=utter_smalltalk_appraisal_no_problem];
+30 [class="", fontsize=12, label=utter_smalltalk_appraisal_thank_you];
+31 [class="", fontsize=12, label=utter_smalltalk_appraisal_welcome];
+32 [class="", fontsize=12, label=utter_smalltalk_appraisal_well_done];
+33 [class="", fontsize=12, label=utter_smalltalk_confirmation_cancel];
+34 [class="", fontsize=12, label=utter_smalltalk_confirmation_no];
+35 [class="", fontsize=12, label=utter_smalltalk_dialog_hold_on];
+36 [class="", fontsize=12, label=utter_smalltalk_dialog_hug];
+37 [class="", fontsize=12, label=utter_smalltalk_dialog_i_do_not_care];
+38 [class="", fontsize=12, label=utter_smalltalk_dialog_sorry];
+39 [class="", fontsize=12, label=utter_smalltalk_dialog_what_do_you_mean];
+40 [class="", fontsize=12, label=utter_smalltalk_dialog_wrong];
+41 [class="", fontsize=12, label=utter_smalltalk_emotions_ha_ha];
+42 [class="", fontsize=12, label=utter_smalltalk_emotions_wow];
+43 [class="", fontsize=12, label=utter_smalltalk_greetings_bye];
+44 [class="", fontsize=12, label=utter_smalltalk_greetings_goodevening];
+45 [class="", fontsize=12, label=utter_smalltalk_greetings_goodmorning];
+46 [class="", fontsize=12, label=utter_smalltalk_greetings_goodnight];
+47 [class="", fontsize=12, label=utter_smalltalk_greetings_hello];
+48 [class="", fontsize=12, label=utter_smalltalk_greetings_how_are_you];
+49 [class="", fontsize=12, label=utter_smalltalk_greetings_nice_to_meet_you];
+50 [class="", fontsize=12, label=utter_smalltalk_greetings_nice_to_see_you];
+51 [class="", fontsize=12, label=utter_smalltalk_agent_acquaintance];
+52 [class="", fontsize=12, label=utter_smalltalk_greetings_nice_to_talk_to_you];
+53 [class="", fontsize=12, label=utter_smalltalk_greetings_whatsup];
+54 [class="", fontsize=12, label=utter_smalltalk_user_angry];
+55 [class="", fontsize=12, label=utter_smalltalk_user_back];
+56 [class="", fontsize=12, label=utter_smalltalk_user_bored];
+57 [class="", fontsize=12, label=utter_smalltalk_user_busy];
+58 [class="", fontsize=12, label=utter_smalltalk_user_can_not_sleep];
+59 [class="", fontsize=12, label=utter_smalltalk_user_does_not_want_to_talk];
+60 [class="", fontsize=12, label=utter_smalltalk_user_excited];
+61 [class="", fontsize=12, label=utter_smalltalk_user_going_to_bed];
+62 [class="", fontsize=12, label=utter_smalltalk_agent_age];
+63 [class="", fontsize=12, label=utter_smalltalk_user_good];
+64 [class="", fontsize=12, label=utter_smalltalk_user_happy];
+65 [class="", fontsize=12, label=utter_smalltalk_user_has_birthday];
+66 [class="", fontsize=12, label=utter_smalltalk_user_here];
+67 [class="", fontsize=12, label=utter_smalltalk_user_joking];
+68 [class="", fontsize=12, label=utter_smalltalk_user_likes_agent];
+69 [class="", fontsize=12, label=utter_smalltalk_user_lonely];
+70 [class="", fontsize=12, label=utter_smalltalk_user_looks_like];
+71 [class="", fontsize=12, label=utter_smalltalk_user_loves_agent];
+72 [class="", fontsize=12, label=utter_smalltalk_user_misses_agent];
+73 [class="", fontsize=12, label=utter_smalltalk_agent_annoying];
+74 [class="", fontsize=12, label=utter_smalltalk_user_needs_advice];
+75 [class="", fontsize=12, label=utter_smalltalk_user_sad];
+76 [class="", fontsize=12, label=utter_smalltalk_user_sleepy];
+77 [class="", fontsize=12, label=utter_smalltalk_user_testing_agent];
+78 [class="", fontsize=12, label=utter_smalltalk_user_tired];
+79 [class="", fontsize=12, label=utter_smalltalk_user_waits];
+80 [class="", fontsize=12, label=utter_smalltalk_user_wants_to_see_agent_again];
+81 [class="", fontsize=12, label=utter_smalltalk_user_wants_to_talk];
+82 [class="", fontsize=12, label=utter_smalltalk_user_will_be_back];
+83 [class="", fontsize=12, label=restaurant_form];
+84 [class="", fontsize=12, label=utter_ask_continue];
+85 [class="", fontsize=12, label=restaurant_form];
+86 [class="", fontsize=12, label=utter_submit];
+87 [class="", fontsize=12, label=utter_slots_values];
+88 [class="", fontsize=12, label=utter_smalltalk_agent_answer_my_question];
+91 [class="", fontsize=12, label=action_deactivate_loop];
+92 [class="", fontsize=12, label=utter_confirmation_get_insurance];
+93 [class="", fontsize=12, label=insurance_form];
+94 [class="", fontsize=12, label=utter_ask_continue];
+95 [class="", fontsize=12, label=insurance_form];
+96 [class="", fontsize=12, label=utter_submit];
+97 [class="", fontsize=12, label=utter_slots_values_insurance];
+98 [class="", fontsize=12, label=action_get_quotes];
+99 [class="", fontsize=12, label=utter_smalltalk_agent_bad];
+100 [class="", fontsize=12, label="..."];
+101 [class="", fontsize=12, label=restaurant_form];
+114 [class=intent, fillcolor=lightblue, label=study, shape=rect, style=filled];
+115 [class=intent, fillcolor=lightblue, label="you look awesome", shape=rect, style=filled];
+116 [class=intent, fillcolor=lightblue, label="what's your birthday", shape=rect, style=filled];
+117 [class=intent, fillcolor=lightblue, label="you are boring me", shape=rect, style=filled];
+118 [class=intent, fillcolor=lightblue, label="who is your boss", shape=rect, style=filled];
+119 [class=intent, fillcolor=lightblue, label="you're very busy", shape=rect, style=filled];
+120 [class=intent, fillcolor=lightblue, label="you are chatbot", shape=rect, style=filled];
+121 [class=intent, fillcolor=lightblue, label="you are very clever", shape=rect, style=filled];
+122 [class=intent, fillcolor=lightblue, label="are you crazy", shape=rect, style=filled];
+123 [class=intent, fillcolor=lightblue, label="you are unemployed from now on", shape=rect, style=filled];
+124 [class=intent, fillcolor=lightblue, label="you are funny", shape=rect, style=filled];
+125 [class=intent, fillcolor=lightblue, label="you're perfect", shape=rect, style=filled];
+126 [class=intent, fillcolor=lightblue, label="you're extremely happy", shape=rect, style=filled];
+127 [class=intent, fillcolor=lightblue, label="you are hungry", shape=rect, style=filled];
+128 [class=intent, fillcolor=lightblue, label="I love you marry me", shape=rect, style=filled];
+129 [class=intent, fillcolor=lightblue, label="I want to have a friend like you", shape=rect, style=filled];
+130 [class=intent, fillcolor=lightblue, label="where is your office located", shape=rect, style=filled];
+131 [class=intent, fillcolor=lightblue, label="where have you been born", shape=rect, style=filled];
+132 [class=intent, fillcolor=lightblue, label="are you ready", shape=rect, style=filled];
+133 [class=intent, fillcolor=lightblue, label="glad you're real", shape=rect, style=filled];
+134 [class=intent, fillcolor=lightblue, label="what is your hometown", shape=rect, style=filled];
+135 [class=intent, fillcolor=lightblue, label="you're absolutely right", shape=rect, style=filled];
+136 [class=intent, fillcolor=lightblue, label="please do", shape=rect, style=filled];
+137 [class=intent, fillcolor=lightblue, label="are you sure", shape=rect, style=filled];
+138 [class=intent, fillcolor=lightblue, label="can you talk with me", shape=rect, style=filled];
+139 [class=intent, fillcolor=lightblue, label="are you here", shape=rect, style=filled];
+140 [class=intent, fillcolor=lightblue, label="bad really bad", shape=rect, style=filled];
+141 [class=intent, fillcolor=lightblue, label="so sweet of you", shape=rect, style=filled];
+142 [class=intent, fillcolor=lightblue, label="don't worry", shape=rect, style=filled];
+143 [class=intent, fillcolor=lightblue, label=thanks, shape=rect, style=filled];
+144 [class=intent, fillcolor=lightblue, label="you're so welcome", shape=rect, style=filled];
+145 [class=intent, fillcolor=lightblue, label="good work", shape=rect, style=filled];
+146 [class=intent, fillcolor=lightblue, label="just stop it", shape=rect, style=filled];
+147 [class=intent, fillcolor=lightblue, label="no that's wrong", shape=rect, style=filled];
+148 [class=intent, fillcolor=lightblue, label=wait, shape=rect, style=filled];
+149 [class=intent, fillcolor=lightblue, label="you hugged", shape=rect, style=filled];
+150 [class=intent, fillcolor=lightblue, label="don't care at all", shape=rect, style=filled];
+151 [class=intent, fillcolor=lightblue, label=pardon, shape=rect, style=filled];
+152 [class=intent, fillcolor=lightblue, label="what do you mean exactly", shape=rect, style=filled];
+153 [class=intent, fillcolor=lightblue, label="that's wrong", shape=rect, style=filled];
+154 [class=intent, fillcolor=lightblue, label=ahah, shape=rect, style=filled];
+155 [class=intent, fillcolor=lightblue, label=wooow, shape=rect, style=filled];
+156 [class=intent, fillcolor=lightblue, label="get lost", shape=rect, style=filled];
+157 [class=intent, fillcolor=lightblue, label="good evening there", shape=rect, style=filled];
+158 [class=intent, fillcolor=lightblue, label="and a good morning to you", shape=rect, style=filled];
+159 [class=intent, fillcolor=lightblue, label="thank you good night", shape=rect, style=filled];
+160 [class=intent, fillcolor=lightblue, label="a good day", shape=rect, style=filled];
+161 [class=intent, fillcolor=lightblue, label="how are you today", shape=rect, style=filled];
+162 [class=intent, fillcolor=lightblue, label="it was very nice to meet you", shape=rect, style=filled];
+163 [class=intent, fillcolor=lightblue, label="I'm glad to see you", shape=rect, style=filled];
+164 [class=intent, fillcolor=lightblue, label="talk some stuff about yourself", shape=rect, style=filled];
+165 [class=intent, fillcolor=lightblue, label="nice talking to you", shape=rect, style=filled];
+166 [class=intent, fillcolor=lightblue, label="what's cooking", shape=rect, style=filled];
+167 [class=intent, fillcolor=lightblue, label="I am mad at you", shape=rect, style=filled];
+168 [class=intent, fillcolor=lightblue, label="here I am again", shape=rect, style=filled];
+169 [class=intent, fillcolor=lightblue, label="very boring", shape=rect, style=filled];
+170 [class=intent, fillcolor=lightblue, label="I'm swamped", shape=rect, style=filled];
+171 [class=intent, fillcolor=lightblue, label="I can't get any sleep", shape=rect, style=filled];
+172 [class=intent, fillcolor=lightblue, label="I don't want to talk", shape=rect, style=filled];
+173 [class=intent, fillcolor=lightblue, label="I'm excited about working with you", shape=rect, style=filled];
+174 [class=intent, fillcolor=lightblue, label="let's go to bed", shape=rect, style=filled];
+175 [class=intent, fillcolor=lightblue, label="what's your age", shape=rect, style=filled];
+176 [class=intent, fillcolor=lightblue, label="I am good", shape=rect, style=filled];
+177 [class=intent, fillcolor=lightblue, label="I'm happy to see you", shape=rect, style=filled];
+178 [class=intent, fillcolor=lightblue, label="it's my birthday today", shape=rect, style=filled];
+179 [class=intent, fillcolor=lightblue, label="here I am", shape=rect, style=filled];
+180 [class=intent, fillcolor=lightblue, label=kidding, shape=rect, style=filled];
+181 [class=intent, fillcolor=lightblue, label="I really like you", shape=rect, style=filled];
+182 [class=intent, fillcolor=lightblue, label="I'm so lonely", shape=rect, style=filled];
+183 [class=intent, fillcolor=lightblue, label="what do I look like", shape=rect, style=filled];
+184 [class=intent, fillcolor=lightblue, label="love you", shape=rect, style=filled];
+185 [class=intent, fillcolor=lightblue, label="I missed you", shape=rect, style=filled];
+186 [class=intent, fillcolor=lightblue, label="you are annoying me so much", shape=rect, style=filled];
+187 [class=intent, fillcolor=lightblue, label="help me with advice", shape=rect, style=filled];
+188 [class=intent, fillcolor=lightblue, label="I'm grieving", shape=rect, style=filled];
+189 [class=intent, fillcolor=lightblue, label="I am sleepy", shape=rect, style=filled];
+190 [class=intent, fillcolor=lightblue, label="testing chatbot", shape=rect, style=filled];
+191 [class=intent, fillcolor=lightblue, label="I'm worn out", shape=rect, style=filled];
+192 [class=intent, fillcolor=lightblue, label="I'll wait", shape=rect, style=filled];
+193 [class=intent, fillcolor=lightblue, label="I'd be happy to see you again", shape=rect, style=filled];
+194 [class=intent, fillcolor=lightblue, label="I want to talk to you", shape=rect, style=filled];
+195 [class=intent, fillcolor=lightblue, label="/smalltalk_user_will_be_back", shape=rect, style=filled];
+196 [class=intent, fillcolor=lightblue, label="a restaurant that serves caribbean food", shape=rect, style=filled];
+197 [class=intent, fillcolor=lightblue, label="just answer the question", shape=rect, style=filled];
+198 [class=intent, fillcolor=lightblue, label="a insurance for my car KP10XRJ", shape=rect, style=filled];
+199 [class=intent, fillcolor=lightblue, label="you are a waste of time", shape=rect, style=filled];
+200 [class=intent, fillcolor=lightblue, label="nothing else?", shape=rect, style=filled];
+201 [class=intent, fillcolor=lightblue, label="ok yes", shape=rect, style=filled];
+202 [class=intent, fillcolor=lightblue, label="don't", shape=rect, style=filled];
+203 [class=intent, fillcolor=lightblue, label="ok, but that doesnt help me", shape=rect, style=filled];
+204 [class=intent, fillcolor=lightblue, label="yes it is correct", shape=rect, style=filled];
+205 [class=intent, fillcolor=lightblue, label="i'd like to book a table for two with spanish cuisine", shape=rect, style=filled];
+206 [class=intent, fillcolor=lightblue, label="uh can i find a insurance that insure Builder", shape=rect, style=filled];
+0 -> 100  [class="", key=NONE, label=""];
+0 -> 114  [class="", key=0];
+0 -> 115  [class="", key=0];
+0 -> 116  [class="", key=0];
+0 -> 117  [class="", key=0];
+0 -> 118  [class="", key=0];
+0 -> 119  [class="", key=0];
+0 -> 120  [class="", key=0];
+0 -> 121  [class="", key=0];
+0 -> 122  [class="", key=0];
+0 -> 123  [class="", key=0];
+0 -> 124  [class="", key=0];
+0 -> 125  [class="", key=0];
+0 -> 126  [class="", key=0];
+0 -> 127  [class="", key=0];
+0 -> 128  [class="", key=0];
+0 -> 129  [class="", key=0];
+0 -> 130  [class="", key=0];
+0 -> 131  [class="", key=0];
+0 -> 132  [class="", key=0];
+0 -> 133  [class="", key=0];
+0 -> 134  [class="", key=0];
+0 -> 135  [class="", key=0];
+0 -> 136  [class="", key=0];
+0 -> 137  [class="", key=0];
+0 -> 138  [class="", key=0];
+0 -> 139  [class="", key=0];
+0 -> 140  [class="", key=0];
+0 -> 141  [class="", key=0];
+0 -> 142  [class="", key=0];
+0 -> 143  [class="", key=0];
+0 -> 144  [class="", key=0];
+0 -> 145  [class="", key=0];
+0 -> 146  [class="", key=0];
+0 -> 147  [class="", key=0];
+0 -> 148  [class="", key=0];
+0 -> 149  [class="", key=0];
+0 -> 150  [class="", key=0];
+0 -> 151  [class="", key=0];
+0 -> 152  [class="", key=0];
+0 -> 153  [class="", key=0];
+0 -> 154  [class="", key=0];
+0 -> 155  [class="", key=0];
+0 -> 156  [class="", key=0];
+0 -> 157  [class="", key=0];
+0 -> 158  [class="", key=0];
+0 -> 159  [class="", key=0];
+0 -> 160  [class="", key=0];
+0 -> 161  [class="", key=0];
+0 -> 162  [class="", key=0];
+0 -> 163  [class="", key=0];
+0 -> 164  [class="", key=0];
+0 -> 165  [class="", key=0];
+0 -> 166  [class="", key=0];
+0 -> 167  [class="", key=0];
+0 -> 168  [class="", key=0];
+0 -> 169  [class="", key=0];
+0 -> 170  [class="", key=0];
+0 -> 171  [class="", key=0];
+0 -> 172  [class="", key=0];
+0 -> 173  [class="", key=0];
+0 -> 174  [class="", key=0];
+0 -> 175  [class="", key=0];
+0 -> 176  [class="", key=0];
+0 -> 177  [class="", key=0];
+0 -> 178  [class="", key=0];
+0 -> 179  [class="", key=0];
+0 -> 180  [class="", key=0];
+0 -> 181  [class="", key=0];
+0 -> 182  [class="", key=0];
+0 -> 183  [class="", key=0];
+0 -> 184  [class="", key=0];
+0 -> 185  [class="", key=0];
+0 -> 186  [class="", key=0];
+0 -> 187  [class="", key=0];
+0 -> 188  [class="", key=0];
+0 -> 189  [class="", key=0];
+0 -> 190  [class="", key=0];
+0 -> 191  [class="", key=0];
+0 -> 192  [class="", key=0];
+0 -> 193  [class="", key=0];
+0 -> 194  [class="", key=0];
+0 -> 195  [class="", key=0];
+0 -> 196  [class="", key=0];
+0 -> 197  [class="", key=0];
+0 -> 198  [class="", key=0];
+0 -> 199  [class="", key=0];
+1 -> "-1"  [class="", key=NONE, label=""];
+2 -> "-1"  [class="", key=NONE, label=""];
+3 -> "-1"  [class="", key=NONE, label=""];
+4 -> "-1"  [class="", key=NONE, label=""];
+5 -> "-1"  [class="", key=NONE, label=""];
+6 -> "-1"  [class="", key=NONE, label=""];
+7 -> "-1"  [class="", key=NONE, label=""];
+8 -> "-1"  [class="", key=NONE, label=""];
+9 -> "-1"  [class="", key=NONE, label=""];
+10 -> "-1"  [class="", key=NONE, label=""];
+11 -> "-1"  [class="", key=NONE, label=""];
+12 -> "-1"  [class="", key=NONE, label=""];
+13 -> "-1"  [class="", key=NONE, label=""];
+14 -> "-1"  [class="", key=NONE, label=""];
+15 -> "-1"  [class="", key=NONE, label=""];
+16 -> "-1"  [class="", key=NONE, label=""];
+17 -> "-1"  [class="", key=NONE, label=""];
+18 -> "-1"  [class="", key=NONE, label=""];
+19 -> "-1"  [class="", key=NONE, label=""];
+20 -> "-1"  [class="", key=NONE, label=""];
+21 -> "-1"  [class="", key=NONE, label=""];
+22 -> "-1"  [class="", key=NONE, label=""];
+23 -> "-1"  [class="", key=NONE, label=""];
+24 -> "-1"  [class="", key=NONE, label=""];
+25 -> "-1"  [class="", key=NONE, label=""];
+26 -> "-1"  [class="", key=NONE, label=""];
+27 -> "-1"  [class="", key=NONE, label=""];
+28 -> "-1"  [class="", key=NONE, label=""];
+29 -> "-1"  [class="", key=NONE, label=""];
+30 -> "-1"  [class="", key=NONE, label=""];
+31 -> "-1"  [class="", key=NONE, label=""];
+32 -> "-1"  [class="", key=NONE, label=""];
+33 -> "-1"  [class="", key=NONE, label=""];
+34 -> "-1"  [class="", key=NONE, label=""];
+35 -> "-1"  [class="", key=NONE, label=""];
+36 -> "-1"  [class="", key=NONE, label=""];
+37 -> "-1"  [class="", key=NONE, label=""];
+38 -> "-1"  [class="", key=NONE, label=""];
+39 -> "-1"  [class="", key=NONE, label=""];
+40 -> "-1"  [class="", key=NONE, label=""];
+41 -> "-1"  [class="", key=NONE, label=""];
+42 -> "-1"  [class="", key=NONE, label=""];
+43 -> "-1"  [class="", key=NONE, label=""];
+44 -> "-1"  [class="", key=NONE, label=""];
+45 -> "-1"  [class="", key=NONE, label=""];
+46 -> "-1"  [class="", key=NONE, label=""];
+47 -> "-1"  [class="", key=NONE, label=""];
+48 -> "-1"  [class="", key=NONE, label=""];
+49 -> "-1"  [class="", key=NONE, label=""];
+50 -> "-1"  [class="", key=NONE, label=""];
+51 -> "-1"  [class="", key=NONE, label=""];
+52 -> "-1"  [class="", key=NONE, label=""];
+53 -> "-1"  [class="", key=NONE, label=""];
+54 -> "-1"  [class="", key=NONE, label=""];
+55 -> "-1"  [class="", key=NONE, label=""];
+56 -> "-1"  [class="", key=NONE, label=""];
+57 -> "-1"  [class="", key=NONE, label=""];
+58 -> "-1"  [class="", key=NONE, label=""];
+59 -> "-1"  [class="", key=NONE, label=""];
+60 -> "-1"  [class="", key=NONE, label=""];
+61 -> "-1"  [class="", key=NONE, label=""];
+62 -> "-1"  [class="", key=NONE, label=""];
+63 -> "-1"  [class="", key=NONE, label=""];
+64 -> "-1"  [class="", key=NONE, label=""];
+65 -> "-1"  [class="", key=NONE, label=""];
+66 -> "-1"  [class="", key=NONE, label=""];
+67 -> "-1"  [class="", key=NONE, label=""];
+68 -> "-1"  [class="", key=NONE, label=""];
+69 -> "-1"  [class="", key=NONE, label=""];
+70 -> "-1"  [class="", key=NONE, label=""];
+71 -> "-1"  [class="", key=NONE, label=""];
+72 -> "-1"  [class="", key=NONE, label=""];
+73 -> "-1"  [class="", key=NONE, label=""];
+74 -> "-1"  [class="", key=NONE, label=""];
+75 -> "-1"  [class="", key=NONE, label=""];
+76 -> "-1"  [class="", key=NONE, label=""];
+77 -> "-1"  [class="", key=NONE, label=""];
+78 -> "-1"  [class="", key=NONE, label=""];
+79 -> "-1"  [class="", key=NONE, label=""];
+80 -> "-1"  [class="", key=NONE, label=""];
+81 -> "-1"  [class="", key=NONE, label=""];
+82 -> "-1"  [class="", key=NONE, label=""];
+83 -> 200  [class="", key=0];
+84 -> 201  [class="", key=0];
+84 -> 202  [class="", key=0];
+85 -> 86  [class="", key=NONE, label=""];
+86 -> 87  [class="", key=NONE, label=""];
+87 -> "-1"  [class="", key=NONE, label=""];
+88 -> "-1"  [class="", key=NONE, label=""];
+91 -> "-1"  [class="", key=NONE, label=""];
+92 -> 93  [class="", key=NONE, label=""];
+93 -> "-1"  [class="", key=NONE, label=""];
+93 -> 203  [class="", key=0];
+94 -> 204  [class="", key=0];
+95 -> 96  [class="", key=NONE, label=""];
+96 -> 97  [class="", key=NONE, label=""];
+97 -> 98  [class="", key=NONE, label=""];
+98 -> "-1"  [class="", key=NONE, label=""];
+99 -> "-1"  [class="", key=NONE, label=""];
+100 -> 85  [class="", key=NONE, label=""];
+100 -> 95  [class="", key=NONE, label=""];
+100 -> 205  [class="", key=0];
+100 -> 206  [class="", key=0];
+101 -> "-1"  [class="", key=NONE, label=""];
+114 -> 1  [class="", key=0];
+115 -> 2  [class="", key=0];
+116 -> 3  [class="", key=0];
+117 -> 4  [class="", key=0];
+118 -> 5  [class="", key=0];
+119 -> 6  [class="", key=0];
+120 -> 7  [class="", key=0];
+121 -> 8  [class="", key=0];
+122 -> 9  [class="", key=0];
+123 -> 10  [class="", key=0];
+124 -> 11  [class="", key=0];
+125 -> 12  [class="", key=0];
+126 -> 13  [class="", key=0];
+127 -> 14  [class="", key=0];
+128 -> 15  [class="", key=0];
+129 -> 16  [class="", key=0];
+130 -> 17  [class="", key=0];
+131 -> 18  [class="", key=0];
+132 -> 19  [class="", key=0];
+133 -> 20  [class="", key=0];
+134 -> 21  [class="", key=0];
+135 -> 22  [class="", key=0];
+136 -> 23  [class="", key=0];
+137 -> 24  [class="", key=0];
+138 -> 25  [class="", key=0];
+139 -> 26  [class="", key=0];
+140 -> 27  [class="", key=0];
+141 -> 28  [class="", key=0];
+142 -> 29  [class="", key=0];
+143 -> 30  [class="", key=0];
+144 -> 31  [class="", key=0];
+145 -> 32  [class="", key=0];
+146 -> 33  [class="", key=0];
+147 -> 34  [class="", key=0];
+148 -> 35  [class="", key=0];
+149 -> 36  [class="", key=0];
+150 -> 37  [class="", key=0];
+151 -> 38  [class="", key=0];
+152 -> 39  [class="", key=0];
+153 -> 40  [class="", key=0];
+154 -> 41  [class="", key=0];
+155 -> 42  [class="", key=0];
+156 -> 43  [class="", key=0];
+157 -> 44  [class="", key=0];
+158 -> 45  [class="", key=0];
+159 -> 46  [class="", key=0];
+160 -> 47  [class="", key=0];
+161 -> 48  [class="", key=0];
+162 -> 49  [class="", key=0];
+163 -> 50  [class="", key=0];
+164 -> 51  [class="", key=0];
+165 -> 52  [class="", key=0];
+166 -> 53  [class="", key=0];
+167 -> 54  [class="", key=0];
+168 -> 55  [class="", key=0];
+169 -> 56  [class="", key=0];
+170 -> 57  [class="", key=0];
+171 -> 58  [class="", key=0];
+172 -> 59  [class="", key=0];
+173 -> 60  [class="", key=0];
+174 -> 61  [class="", key=0];
+175 -> 62  [class="", key=0];
+176 -> 63  [class="", key=0];
+177 -> 64  [class="", key=0];
+178 -> 65  [class="", key=0];
+179 -> 66  [class="", key=0];
+180 -> 67  [class="", key=0];
+181 -> 68  [class="", key=0];
+182 -> 69  [class="", key=0];
+183 -> 70  [class="", key=0];
+184 -> 71  [class="", key=0];
+185 -> 72  [class="", key=0];
+186 -> 73  [class="", key=0];
+187 -> 74  [class="", key=0];
+188 -> 75  [class="", key=0];
+189 -> 76  [class="", key=0];
+190 -> 77  [class="", key=0];
+191 -> 78  [class="", key=0];
+192 -> 79  [class="", key=0];
+193 -> 80  [class="", key=0];
+194 -> 81  [class="", key=0];
+195 -> 82  [class="", key=0];
+196 -> 83  [class="", key=0];
+197 -> 88  [class="", key=0];
+198 -> 92  [class="", key=0];
+199 -> 99  [class="", key=0];
+200 -> 84  [class="", key=0];
+201 -> 85  [class="", key=0];
+202 -> 91  [class="", key=0];
+203 -> 94  [class="", key=0];
+204 -> 95  [class="", key=0];
+205 -> 101  [class="", key=0];
+206 -> 92  [class="", key=0];
+}
+`;
+    drawGraph(graph);
+  } else {
+    serveGraph();
+  }
+
+
+</script>
+</body>
+</html>

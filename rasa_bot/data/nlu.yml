@@ -1512,7 +1512,7 @@ nlu:
       - I am feeling lonely
       - I feel lonely
   - intent: smalltalk_user_looks_like
-    examples: 
+    examples: |
       - what do I look like
       - how do I look
       - do I look good
@@ -1680,7 +1680,11 @@ nlu:
       - I go by [Amy](first_name)
       - The name's [James](first_name)
       - My name is [Alice](first_name)
+      - My name is [Emily](first_name)
+      - My name is [Robert](first_name)
       - This is [Nancy](first_name) speaking
+      - This is [Peter](first_name)
+      - This is [John](first_name)
       - You can call me [David](first_name)
       - Just call me [Sara](first_name)
       - My given name is [Sophie](first_name)
@@ -1688,8 +1692,10 @@ nlu:
       - Last name is [Johnson](last_name)
       - The last name's [Brown](last_name)
       - My family name is [Davis](last_name)
+      - My family name is [Johnson](last_name)
       - Surname's [Taylor](last_name)
       - Call me Mrs. [Martin](last_name)
+      - Call me Mrs. [Doe](last_name)
       - My car's registration number is [XYZ123](car_reg)
       - The car's plate number is [ABC789](car_reg)
       - The car is registered as [DF123G](car_reg)

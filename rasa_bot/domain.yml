@@ -406,7 +406,9 @@ responses:
 
   utter_smalltalk_appraisal_thank_you:
     - text: "Anytime. That's what I'm here for."
+      image: "https://img.freepik.com/premium-vector/you-are-welcome-words-by-hand_71301-222.jpg"
     - text: "It's my pleasure to help."
+      image: "https://img.freepik.com/premium-vector/you-are-welcome-words-by-hand_71301-222.jpg"
 
   utter_smalltalk_appraisal_welcome:
     - text: "You're so polite!"

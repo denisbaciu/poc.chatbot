@@ -5,6 +5,7 @@ import random
 from typing import Dict, Text, Any, List, Union
 import logging
 
+from pymongo import MongoClient
 from rasa_sdk import Tracker
 from rasa_sdk.executor import CollectingDispatcher
 from rasa_sdk.forms import FormValidationAction
@@ -13,7 +14,6 @@ from rasa_sdk.events import AllSlotsReset
 
 
 class ValidateRestaurantForm(FormValidationAction):
-    """Example of a form validation action."""
 
     def name(self) -> Text:
         return "validate_restaurant_form"
@@ -323,9 +323,25 @@ class ActionGetQuotes(Action):
             tracker: Tracker,
             domain: Dict[Text, Any],
         ) -> List[Dict]:
+
+        first_name = tracker.get_slot('first_name')
+        last_name = tracker.get_slot('last_name')
+        client = MongoClient('mongodb://root:example@localhost:27017/')
+        db = client['pocchatbot']  
+        collection = db['customers_data']
+
+        # query the database to get the customer details
+        customer = collection.find_one({"first_name": first_name, "last_name": last_name})
         
         try:
             url_car_insurance_price_predict = "http://localhost:8001/predict"
+
+            def check_credit(customer):
+                if(customer):
+                    return customer['credit_score']
+                else:
+                    logging.info(f"credit rating was generated")
+                    return random.randint(100, 999)
 
             data_car = {
                 "job_title": f"{tracker.get_slot('job_title')}",
@@ -333,7 +349,7 @@ class ActionGetQuotes(Action):
                 "total_miles": tracker.get_slot('total_miles'),
                 "previous_claims": f"{tracker.get_slot('previous_claims')}",
                 "postcode": f"{tracker.get_slot('postcode')}",
-                "credit_score": random.randint(100, 999)
+                "credit_score": check_credit(customer)
             }
 
             logging.info(f"Date sent to car insurance prediction: {data_car}")
@@ -353,39 +369,51 @@ class ActionGetQuotes(Action):
         try:
             url_home_insurance_recommendation = "http://localhost:5001/predict"
 
-            #supposedly we will fetch this data from our database - for now I randomly generate it
-            data_home = {
-                "profession": f"{tracker.get_slot('job_title')}",
-                "married": random.randint(0, 1),
-                "cars_owned": random.randint(0, 5),
-                "kids_number": random.randint(0, 6),
-                "credit_card_owned": random.randint(0, 1),
-                "annual_salary": random.randint(12000, 160000),
-                "months_ago_quoted": random.randint(0, 12),
-                "has_a_house": random.randint(0, 1),
-            }
-
-            # "married": 0,
-            # "cars_owned": 1,
-            # "kids_number": 1,
-            # "credit_card_owned": 1,
-            # "annual_salary": 160000,
-            # "months_ago_quoted": 12,
-            # "has_a_house": 1
+            #we will fetch this data from our database if it exists - otherwise randomly generate
+            if(customer):
+                data_home = {
+                    "profession": f"{tracker.get_slot('job_title')}",
+                    "married": customer['married'],
+                    "cars_owned": customer['cars_owned'],
+                    "kids_number": customer['kids_number'],
+                    "credit_card_owned": customer['credit_card_owned'],
+                    "annual_salary": customer['annual_salary'],
+                    "months_ago_quoted": customer['months_ago_quoted'],
+                    "has_a_house": customer['has_a_house'],
+                }
+            else:
+                data_home = {
+                    "profession": f"{tracker.get_slot('job_title')}",
+                    "married": random.randint(0, 1),
+                    "cars_owned": random.randint(0, 5),
+                    "kids_number": random.randint(0, 6),
+                    "credit_card_owned": random.randint(0, 1),
+                    "annual_salary": random.randint(12000, 160000),
+                    "months_ago_quoted": random.randint(0, 12),
+                    "has_a_house": random.randint(0, 1),
+                }
+                 
 
             logging.info(f"Date sent to house insurance recommendation: {data_home}")
-
             headers = {'Content-Type': 'application/json'}
+
+            buttons_mortgage = []
+            buttons_mortgage.append({"title": 'Yes' , "payload": 'yes_mortgage'})
+            buttons_mortgage.append({"title": 'No' , "payload": 'no_mortgage'})
+
+            buttons_home = []
+            buttons_home.append({"title": 'Yes' , "payload": 'yes_home'})
+            buttons_home.append({"title": 'No' , "payload": 'no_home'})
 
             response_home = requests.post(url_home_insurance_recommendation, data=json.dumps(data_home), headers=headers)
             if response_home.status_code == 200:
                 data = response_home.json()
                 if(data['prediction'] > 0.6):
                     response_text = f"Also we offer the cheapest home insurance quotes, do you want to have a look?"
-                    dispatcher.utter_message(text=f"{response_text}", image="https://images.vexels.com/media/users/3/210321/isolated/lists/c14fc2ab99fee935a402582c27c70e24-home-sweet-home-badge.png")
+                    dispatcher.utter_message(text=f"{response_text}", buttons=buttons_home)
                 else:
                     response_text = f"Can I suggest some mortgages?"
-                    dispatcher.utter_message(text=f"{response_text}", image="https://cdn-icons-png.flaticon.com/256/781/781730.png")
+                    dispatcher.utter_message(text=f"{response_text}", buttons=buttons_mortgage)
 
             else:
                 dispatcher.utter_message(text=f"Error fetching the Home API, status code {str(response_car.status_code)}")

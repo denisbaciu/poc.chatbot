@@ -3,3 +3,4 @@ venv
 .rasa
 /node_modules
 models/
+.idea/

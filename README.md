@@ -96,6 +96,14 @@ source ./venv/bin/activate
 python3.8 main.py
 ```
 
+### database
+
+To start
+
+```
+docker-compose -f docker-compose-db.yml up
+```
+
 * * * * *
 
 Contributions and Future Enhancements
