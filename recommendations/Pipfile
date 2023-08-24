@@ -9,7 +9,7 @@ joblib = "~=1.2.0"
 pandas = "~=1.5.2"
 scikit-learn = "~=1.2.0"
 xgboost = "~=1.7.3"
-uwsgi = "==2.0.20"
+uwsgi = "==2.0.22"
 flask = "==2.2.5"
 python-dotenv = "==0.20.0"
 
